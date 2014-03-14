@@ -1,0 +1,29 @@
+{
+  "name": "hyperdescribe-uber-json",
+  "version": "0.0.1",
+  "description": "A library for converting from UBER to Hyperdescribe and back",
+  "main": "index.js",
+  "directories": {
+    "doc": "doc",
+    "example": "examples"
+  },
+  "dependencies": {
+    "underscore": "~1.6.0"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/smizell/hyperdescribe-uber-json.git"
+  },
+  "keywords": [
+    "hypermedia",
+    "uber",
+    "halpert"
+  ],
+  "author": "Stephen Mizell",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/smizell/hyperdescribe-uber-json/issues"
+  },
+  "homepage": "https://github.com/smizell/hyperdescribe-uber-json"
+}
