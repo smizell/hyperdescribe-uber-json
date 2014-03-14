@@ -136,7 +136,7 @@ Currently, with regards to mapping to Hyperdescribe, the only relevant values wi
 
 ### Resources
 
-An item considered a resource MUST NOT have an `@action` attribute and MUST have a `@data` attribute. Like the `data` element in UBER, Hyperdescribe can handle nested resources.
+An item considered a resource MUST NOT have an `@action` attribute and MUST have a `@data` attribute. Any `@value` attribute will be ignored. Like the `data` element in UBER, Hyperdescribe can handle nested resources.
 
     isResource = (data, level) ->
       !data.action? and hasData(data, level)
