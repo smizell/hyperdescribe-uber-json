@@ -1,6 +1,6 @@
 {
   "name": "hyperdescribe-uber-json",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A library for converting from UBER to Hyperdescribe and back",
   "main": "index.js",
   "directories": {

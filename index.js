@@ -1,5 +1,4 @@
-var parser = require('./lib/parser'),
-    example = require('./examples/full_example');
+var parser = require('./lib/parser');
 
 HyperdescribeUberJSON = module.exports = {
   name: 'uber+json',
