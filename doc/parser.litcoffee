@@ -110,7 +110,7 @@ If an action is one that does not modify the body, the model is added to the act
         action.url = data.url + data.model
         action.template = true
 
-If the action does modify the body, the model is parsed and fields are created. This will be treated as 
+If the action does modify the body, the model is parsed and fields are created.
 
       if data.action in modifiesBody
         action.url = data.url
@@ -119,7 +119,7 @@ If the action does modify the body, the model is parsed and fields are created. 
 
 ### Properties
 
-An item that is considered a property of a resource MUST have a `@value`, MUST NOT be at the root level, MUST NOT be a transition, and MUST NOT have data.
+An item that is considered a property of a resource MUST have a `@value`, MUST NOT be at the root level (or in other words, MUST be a child element), MUST NOT be a transition, and MUST NOT have a `@data` attribute.
 
     isTransition = (data, level) ->
       isLink(data, level) or isAction(data, level)
