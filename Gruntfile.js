@@ -19,7 +19,7 @@ module.exports = function(grunt) {
     browserify: {
       dist: {
         files: {
-          'dist/uberjson.hyperdescribe.js': 'lib/parser.js',
+          'dist/uberjson.hyperdescribe.js': 'index.js',
         }
       }
     },
