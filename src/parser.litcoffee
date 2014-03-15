@@ -1,4 +1,4 @@
-# UBER and Hyperdescribe
+# UBER and Hyperdescribe Parser
 
 The goal of this document is to outline how Hyperdescribe would be used to describe a UBER document according to the [current specs](https://rawgithub.com/mamund/media-types/e034e9d9eae7fb4455f25c928cb84cd513f9472c/uber-hypermedia.html). This document will look at the JSON variant of the UBER format.
 
