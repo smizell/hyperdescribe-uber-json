@@ -34,7 +34,7 @@ UBER only specifies available actions and also provides a mapping of these actio
 
 Items in UBER that are considered links in Hyperdescribe are items with `read` as the action. If the `@action` attribute is absent and the `@url` attribute is present, the action is assumed to be `read`. Additionally, if the action specified is not listed in the spec, it should be treated as `read`. This is according to the UBER spec.
 
-For an item to be considered a link, it MUST have a `@url` attribute, it MUST NOT have any data, and it MUST be a `read` action.
+For an item to be considered a link, it MUST have a `@url` attribute, it MUST NOT have any data, and it MUST be a `read` action. If a `@data` attribute exists, it MUST be ignored.
 
     hasData = (data, level) ->
       data.data? and data.data?.length != 0
@@ -72,7 +72,7 @@ When a link is nested, it SHOULD have a `@property` attribute. The value of this
 
 #### Actions
 
-Items that are considered actions MUST have an `@action` attribute, MUST have a `@url`, MAY have a `@model`, and MUST use an avaiable action from the spec.
+Items that are considered actions MUST have an `@action` attribute, MUST have a `@url`, MAY have a `@model`, and MUST use an avaiable action from the spec. If a `@data` attribute exists, it MUST be ignored.
 
     isAction = (data, level) ->
       data.action? and
@@ -177,4 +177,5 @@ Mapping an UBER document to Hyperdescribe requires treating the root `@uber` ele
 
 1. There is currently no way to tell whether a nested link should be a property of the resource (e.g. the `avatarUrl` in the example in the spec) or just a normal link. 
 2. Is there any way to specify schema.org information for an UBER document?
+3. I'm currently ignoring all `@data` attributes in links and actions.
 

@@ -54,7 +54,7 @@
         
         <h4 id="links">Links</h4>
 <p>Items in UBER that are considered links in Hyperdescribe are items with <code>read</code> as the action. If the <code>@action</code> attribute is absent and the <code>@url</code> attribute is present, the action is assumed to be <code>read</code>. Additionally, if the action specified is not listed in the spec, it should be treated as <code>read</code>. This is according to the UBER spec.</p>
-<p>For an item to be considered a link, it MUST have a <code>@url</code> attribute, it MUST NOT have any data, and it MUST be a <code>read</code> action.</p>
+<p>For an item to be considered a link, it MUST have a <code>@url</code> attribute, it MUST NOT have any data, and it MUST be a <code>read</code> action. If a <code>@data</code> attribute exists, it MUST be ignored.</p>
 
         
           <div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">hasData</span> = <span class="hljs-params">(data, level)</span> -&gt;</span>
@@ -97,7 +97,7 @@
       
         
         <h4 id="actions">Actions</h4>
-<p>Items that are considered actions MUST have an <code>@action</code> attribute, MUST have a <code>@url</code>, MAY have a <code>@model</code>, and MUST use an avaiable action from the spec.</p>
+<p>Items that are considered actions MUST have an <code>@action</code> attribute, MUST have a <code>@url</code>, MAY have a <code>@model</code>, and MUST use an avaiable action from the spec. If a <code>@data</code> attribute exists, it MUST be ignored.</p>
 
         
           <div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">isAction</span> = <span class="hljs-params">(data, level)</span> -&gt;</span>
@@ -226,6 +226,7 @@
 <ol>
 <li>There is currently no way to tell whether a nested link should be a property of the resource (e.g. the <code>avatarUrl</code> in the example in the spec) or just a normal link. </li>
 <li>Is there any way to specify schema.org information for an UBER document?</li>
+<li>I’m currently ignoring all <code>@data</code> attributes in links and actions.</li>
 </ol>
 
         
