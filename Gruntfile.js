@@ -29,12 +29,24 @@ module.exports = function(grunt) {
           'dist/uberjson.hyperdescribe.min.js': 'dist/uberjson.hyperdescribe.js'
         }
       }
+    },
+    docco: {
+      options: {
+        layout : "linear",
+        output : "docs/"
+      },
+      all: {
+        files: {
+          src: ['src/*.litcoffee']
+        }
+      }
     }
   })
 
   grunt.loadNpmTasks('grunt-contrib-coffee');
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-docco-multi');
 
   // Custom task to parse UBER doc
   grunt.registerTask('parseExample', 'Parse example', function() {
@@ -45,5 +57,5 @@ module.exports = function(grunt) {
     grunt.file.write('./examples/uberjson.hyperdescribe.json', JSON.stringify(results, null, 2));
   });
 
-  grunt.registerTask( "build", ["coffee", "browserify", "uglify", "parseExample"] );
+  grunt.registerTask( "build", ["coffee", "browserify", "uglify", "parseExample", "docco"] );
 }
