@@ -1,14 +1,17 @@
 {
   "name": "hyperdescribe-uber-json",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A library for converting from UBER to Hyperdescribe and back",
   "main": "index.js",
-  "directories": {
-    "doc": "doc",
-    "example": "examples"
-  },
   "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "grunt-cli": "~0.1.13",
+    "grunt": "~0.4.4",
+    "grunt-contrib-coffee": "~0.10.1",
+    "browserify": "~3.32.1",
+    "grunt-browserify": "~1.3.2",
+    "grunt-contrib-uglify": "~0.4.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/smizell/hyperdescribe-uber-json.git"
