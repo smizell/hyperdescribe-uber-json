@@ -30,4 +30,4 @@ There is also a browser version in the `dist` directory.
 
 Literate Coffeescript was used to document the code.
 
-* [Parser](src/parser.litcoffee)
+* [Describer](src/describer.litcoffee)
