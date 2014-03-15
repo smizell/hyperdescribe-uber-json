@@ -25,3 +25,9 @@ There is also a browser version in the `dist` directory.
 
 * [Development](dist/uberjson.hyperdescribe.js)
 * [Production](dist/uberjson.hyperdescribe.min.js)
+
+## Documented Code
+
+Literate Coffeescript was used to document the code.
+
+* [Parser](src/parser.litcoffee)
