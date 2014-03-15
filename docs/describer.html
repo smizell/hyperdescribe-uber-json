@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>UBER and Hyperdescribe Parser</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="public/stylesheets/normalize.css" />
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="page">
+
+      <div class="header">
+        
+          
+          <h1 id="uber-and-hyperdescribe-parser">UBER and Hyperdescribe Parser</h1>
+<p>The goal of this document is to outline how Hyperdescribe would be used to describe a UBER document according to the <a href="https://rawgithub.com/mamund/media-types/e034e9d9eae7fb4455f25c928cb84cd513f9472c/uber-hypermedia.html">current specs</a>. This document will look at the JSON variant of the UBER format.</p>
+
+          
+            <div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">cleanItem</span> = <span class="hljs-params">(data)</span> -&gt;</span>
+  Object.keys<span class="hljs-function"><span class="hljs-params">(data)</span>.<span class="hljs-title">reduce</span> <span class="hljs-params">(total, key)</span> -&gt;</span>
+    total[key] = data[key] <span class="hljs-keyword">if</span> data[key]? <span class="hljs-keyword">and</span> data[key].length != <span class="hljs-number">0</span>
+    total
+  , {}</pre></div>
+          
+        
+
+        
+      </div>
+
+      
+        
+        <h2 id="types">Types</h2>
+<p>Even though UBER really only has one data element, <code>data</code>, this data element can be treated differently depending on the context. This section will look at each of these different types along with the conditions for those types and the means to describe them with Hyperdescribe.</p>
+<h3 id="transitions">Transitions</h3>
+<p>In Hyperdescribe, there are two types of transitions:</p>
+<ol>
+<li>Links</li>
+<li>Actions</li>
+</ol>
+<p>In the UBER spec, though, links and actions are not separated in this way, so this document will specify how it is determined whether an item is a link or an action.</p>
+<p>UBER only specifies available actions and also provides a mapping of these actions to their corresponding HTTP verbs (see <a href="https://rawgithub.com/mamund/media-types/master/uber-hypermedia.html#_mapping_uber_tt_action_tt_values_to_http_methods">section 4.1.1</a>).</p>
+
+        
+          <div class='highlight'><pre>availableActions =
+  <span class="hljs-attribute">append</span>: <span class="hljs-string">'POST'</span>
+  <span class="hljs-attribute">partial</span>: <span class="hljs-string">'PATCH'</span>
+  <span class="hljs-attribute">read</span>: <span class="hljs-string">'GET'</span>
+  <span class="hljs-attribute">remove</span>: <span class="hljs-string">'DELETE'</span>
+  <span class="hljs-attribute">replace</span>: <span class="hljs-string">'PUT'</span></pre></div>
+        
+      
+        
+        <h4 id="links">Links</h4>
+<p>Items in UBER that are considered links in Hyperdescribe are items with <code>read</code> as the action. If the <code>@action</code> attribute is absent and the <code>@url</code> attribute is present, the action is assumed to be <code>read</code>. Additionally, if the action specified is not listed in the spec, it should be treated as <code>read</code>. This is according to the UBER spec.</p>
+<p>For an item to be considered a link, it MUST have a <code>@url</code> attribute, it MUST NOT have any data, and it MUST be a <code>read</code> action. If a <code>@data</code> attribute exists, it MUST be ignored.</p>
+
+        
+          <div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">hasData</span> = <span class="hljs-params">(data, level)</span> -&gt;</span>
+  data.data? <span class="hljs-keyword">and</span> data.data?.length != <span class="hljs-number">0</span>
+
+<span class="hljs-function"><span class="hljs-title">isReadAction</span> = <span class="hljs-params">(data)</span> -&gt;</span>
+  !data.action? <span class="hljs-keyword">or</span> 
+    data.action == <span class="hljs-string">'read'</span> <span class="hljs-keyword">or</span> 
+    data.action <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> Object.keys(availableActions)
+
+<span class="hljs-function"><span class="hljs-title">isLink</span> = <span class="hljs-params">(data, level)</span> -&gt;</span>
+  data.url? <span class="hljs-keyword">and</span> !hasData(data, level) <span class="hljs-keyword">and</span> isReadAction(data)</pre></div>
+        
+      
+        
+        <p>When a link is nested, it SHOULD have a <code>@property</code> attribute. The value of this attribute MUST be the <code>@id</code> if it is set, and if not, it MUST be the <code>@name</code> unless it is undefined.</p>
+
+        
+          <div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">getPropertyName</span> = <span class="hljs-params">(data, level)</span> -&gt;</span>
+  <span class="hljs-keyword">if</span> level != <span class="hljs-number">0</span>
+    <span class="hljs-keyword">if</span> data.id? <span class="hljs-keyword">then</span> data.id <span class="hljs-keyword">else</span> data.name
+
+<span class="hljs-function"><span class="hljs-title">mapLink</span> = <span class="hljs-params">(data, level)</span> -&gt;</span>
+  linkUrl = <span class="hljs-keyword">if</span> data.model? <span class="hljs-keyword">then</span> data.url + data.model <span class="hljs-keyword">else</span> data.url
+
+  link =
+    <span class="hljs-attribute">id</span>: data.id
+    <span class="hljs-attribute">name</span>: data.name
+    <span class="hljs-attribute">rel</span>: data.rel
+    <span class="hljs-attribute">property</span>: getPropertyName(data, level)
+    <span class="hljs-attribute">transclude</span>: data.transclude
+    <span class="hljs-attribute">types</span>: data.accepting
+    <span class="hljs-attribute">label</span>: data.value
+
+  link.href = <span class="hljs-keyword">if</span> data.model? <span class="hljs-keyword">then</span> data.url + data.model <span class="hljs-keyword">else</span> data.url
+  link.template = <span class="hljs-literal">true</span> <span class="hljs-keyword">if</span> data.model?
+
+  link</pre></div>
+        
+      
+        
+        <h4 id="actions">Actions</h4>
+<p>Items that are considered actions MUST have an <code>@action</code> attribute, MUST have a <code>@url</code>, MAY have a <code>@model</code>, and MUST use an avaiable action from the spec. If a <code>@data</code> attribute exists, it MUST be ignored.</p>
+
+        
+          <div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">isAction</span> = <span class="hljs-params">(data, level)</span> -&gt;</span>
+  data.action? <span class="hljs-keyword">and</span>
+    data.url? <span class="hljs-keyword">and</span>
+    data.action <span class="hljs-keyword">in</span> Object.keys(availableActions)</pre></div>
+        
+      
+        
+        <p>According to 4.1.1, there are only three actions that modify the body of the message sent:</p>
+<ul>
+<li>append</li>
+<li>partial</li>
+<li>replace</li>
+</ul>
+<p>Since <code>read</code> actions are handled by links, <code>remove</code> is the only action that needs special treatment.</p>
+
+        
+          <div class='highlight'><pre>modifiesBody = [
+  <span class="hljs-string">'append'</span>
+  <span class="hljs-string">'partial'</span>
+  <span class="hljs-string">'replace'</span>
+]
+
+<span class="hljs-function"><span class="hljs-title">mapValue</span> = <span class="hljs-params">(value)</span> -&gt;</span>
+  <span class="hljs-keyword">if</span> value[<span class="hljs-number">0</span>] == <span class="hljs-string">'{'</span> <span class="hljs-keyword">then</span> value[<span class="hljs-number">1.</span>.-<span class="hljs-number">2</span>] <span class="hljs-keyword">else</span> value
+
+<span class="hljs-function"><span class="hljs-title">parseBodyModel</span> = <span class="hljs-params">(model)</span> -&gt;</span>
+  items = model.split<span class="hljs-function"><span class="hljs-params">(<span class="hljs-string">'&amp;'</span>)</span>.<span class="hljs-title">map</span> <span class="hljs-params">(item)</span> -&gt;</span>
+    [key, value] = item.split(<span class="hljs-string">'='</span>)
+    { <span class="hljs-attribute">name</span>: key, <span class="hljs-attribute">type</span>: <span class="hljs-string">"text"</span>, <span class="hljs-attribute">mapsTo</span>: mapValue(value) }
+
+<span class="hljs-function"><span class="hljs-title">mapAction</span> = <span class="hljs-params">(data, level)</span> -&gt;</span>
+  action = 
+    <span class="hljs-attribute">name</span>: data.name
+    <span class="hljs-attribute">rel</span>: data.rel
+    <span class="hljs-attribute">method</span>: availableActions[data.action]
+    <span class="hljs-attribute">sendAs</span>: data.sending
+    <span class="hljs-attribute">property</span>: getPropertyName(data, level)</pre></div>
+        
+      
+        
+        <p>If an action is one that does not modify the body, the model is added to the action’s <code>@url</code> attribute and template is set to <code>true</code>, which conveys it is templated action.</p>
+
+        
+          <div class='highlight'><pre>  <span class="hljs-keyword">if</span> data.action <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> modifiesBody <span class="hljs-keyword">and</span> data.model?
+    action.url = data.url + data.model
+    action.template = <span class="hljs-literal">true</span></pre></div>
+        
+      
+        
+        <p>If the action does modify the body, the model is parsed and fields are created.</p>
+
+        
+          <div class='highlight'><pre>  <span class="hljs-keyword">if</span> data.action <span class="hljs-keyword">in</span> modifiesBody
+    action.url = data.url
+    action.fields = parseBodyModel(data.model)
+  cleanItem(action)</pre></div>
+        
+      
+        
+        <h3 id="properties">Properties</h3>
+<p>An item that is considered a property of a resource MUST have a <code>@value</code>, MUST NOT be at the root level (or in other words, MUST be a child element), MUST NOT be a transition, and MUST NOT have a <code>@data</code> attribute.</p>
+
+        
+          <div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">isTransition</span> = <span class="hljs-params">(data, level)</span> -&gt;</span>
+  isLink(data, level) <span class="hljs-keyword">or</span> isAction(data, level)
+
+<span class="hljs-function"><span class="hljs-title">isProperty</span> = <span class="hljs-params">(data, level)</span> -&gt;</span>
+  data.value? <span class="hljs-keyword">and</span> level != <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> !isTransition(data, level) <span class="hljs-keyword">and</span> !hasData(data, level)</pre></div>
+        
+      
+        
+        <p>Currently, with regards to mapping to Hyperdescribe, the only relevant values will be <code>@name</code> and <code>@value</code>.</p>
+
+        
+          <div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">mapProperty</span> = <span class="hljs-params">(data)</span> -&gt;</span>
+  cleanItem
+    <span class="hljs-attribute">name</span>: data.name
+    <span class="hljs-attribute">value</span>: data.value</pre></div>
+        
+      
+        
+        <h3 id="resources">Resources</h3>
+<p>An item considered a resource MUST NOT have an <code>@action</code> attribute and MUST have a <code>@data</code> attribute. Any <code>@value</code> attribute will be ignored. Like the <code>data</code> element in UBER, Hyperdescribe can handle nested resources.</p>
+
+        
+          <div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">isResource</span> = <span class="hljs-params">(data, level)</span> -&gt;</span>
+  !data.action? <span class="hljs-keyword">and</span> hasData(data, level)</pre></div>
+        
+      
+        
+        <p>Mapping a resource from UBER to Hyperdescribe requires finding all of the links, actions, and properties, along with all nested resources. Once those are all found, they can then be mapped to how </p>
+
+        
+          <div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">mapResource</span> = <span class="hljs-params">(data, level)</span> -&gt;</span>
+  links = data.data.filter <span class="hljs-function"><span class="hljs-params">(d)</span> -&gt;</span> isLink(d, level)
+  actions = data.data.filter <span class="hljs-function"><span class="hljs-params">(d)</span> -&gt;</span> isAction(d, level)
+  resources = data.data.filter <span class="hljs-function"><span class="hljs-params">(d)</span> -&gt;</span> isResource(d, level)
+  properties = data.data.filter <span class="hljs-function"><span class="hljs-params">(d)</span> -&gt;</span> isProperty(d, level)
+
+  hLinks = links.map <span class="hljs-function"><span class="hljs-params">(link)</span> -&gt;</span> mapLink(link)
+  hActions = actions.map <span class="hljs-function"><span class="hljs-params">(action)</span> -&gt;</span> mapAction(action)
+  hResources = resources.map <span class="hljs-function"><span class="hljs-params">(resource)</span> -&gt;</span> mapResource(resource, level + <span class="hljs-number">1</span>)
+  hProperties = properties.map <span class="hljs-function"><span class="hljs-params">(property)</span> -&gt;</span> mapProperty(property)
+
+  cleanItem
+    <span class="hljs-attribute">name</span>: data.name
+    <span class="hljs-attribute">property</span>: getPropertyName(data, level)
+    <span class="hljs-attribute">links</span>: hLinks
+    <span class="hljs-attribute">actions</span>: hActions
+    <span class="hljs-attribute">resources</span>: hResources
+    <span class="hljs-attribute">properties</span>: hProperties</pre></div>
+        
+      
+        
+        <h2 id="uber-document">UBER Document</h2>
+<p>Mapping an UBER document to Hyperdescribe requires treating the root <code>@uber</code> element as a resource. Since each resource can have nested resources, Hyperdescribe should map each resource recursively.</p>
+
+        
+          <div class='highlight'><pre>mapUberDocument = <span class="hljs-built_in">module</span>.<span class="hljs-function"><span class="hljs-title">exports</span> = <span class="hljs-params">(uber)</span> -&gt;</span> mapResource(uber.uber, <span class="hljs-number">0</span>)</pre></div>
+        
+      
+        
+        <h2 id="issues">Issues</h2>
+<ol>
+<li>There is currently no way to tell whether a nested link should be a property of the resource (e.g. the <code>avatarUrl</code> in the example in the spec) or just a normal link. </li>
+<li>Is there any way to specify schema.org information for an UBER document?</li>
+<li>I’m currently ignoring all <code>@data</code> attributes in links and actions.</li>
+</ol>
+
+        
+      
+      <div class="fleur">h</div>
+    </div>
+  </div>
+</body>
+</html>

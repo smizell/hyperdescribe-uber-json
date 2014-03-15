@@ -1,8 +1,8 @@
-var parser = require('./lib/parser');
+var describer = require('./lib/describer');
 
 HyperdescribeUberJSON = module.exports = {
   name: 'uber+json',
   mediaType: 'application/vnd.amundsen-uber+json',
-  parser: parser,
+  describer: describer,
   builder: function(x) { return x }
 }

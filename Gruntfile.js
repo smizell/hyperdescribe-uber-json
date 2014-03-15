@@ -1,18 +1,10 @@
-var parseUber = function() {
-  var uberDoc = require('examples/uber_example'),
-      parser = require('lib/parser')
-      results = parser(uberDoc);
-
-
-}
-
 module.exports = function(grunt) {
 
   grunt.initConfig({
     coffee: {
       compile: {
         files: {
-          'lib/parser.js': 'src/parser.litcoffee'
+          'lib/describer.js': 'src/describer.litcoffee'
         }
       }
     },
@@ -37,7 +29,7 @@ module.exports = function(grunt) {
       },
       all: {
         files: {
-          src: ['src/*.litcoffee']
+          src: ['src/**/*.litcoffee']
         }
       }
     }
@@ -49,13 +41,13 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-docco-multi');
 
   // Custom task to parse UBER doc
-  grunt.registerTask('parseExample', 'Parse example', function() {
+  grunt.registerTask('describeExample', 'Describe example', function() {
     var uberDoc = require('./examples/uber_example'),
-        parser = require('./lib/parser')
+        parser = require('./lib/describer')
         results = parser(uberDoc);
-    grunt.log.writeln('Parsing example UBER doc');
+    grunt.log.writeln('Describe UBER example');
     grunt.file.write('./examples/uberjson.hyperdescribe.json', JSON.stringify(results, null, 2));
   });
 
-  grunt.registerTask( "build", ["coffee", "browserify", "uglify", "parseExample", "docco"] );
+  grunt.registerTask( "build", ["coffee", "browserify", "uglify", "describeExample", "docco"] );
 }

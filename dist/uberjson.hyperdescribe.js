@@ -1,13 +1,13 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var parser = require('./lib/parser');
+var describer = require('./lib/describer');
 
 HyperdescribeUberJSON = module.exports = {
   name: 'uber+json',
   mediaType: 'application/vnd.amundsen-uber+json',
-  parser: parser,
+  describer: describer,
   builder: function(x) { return x }
 }
-},{"./lib/parser":2}],2:[function(require,module,exports){
+},{"./lib/describer":2}],2:[function(require,module,exports){
 (function() {
   var availableActions, cleanItem, getPropertyName, hasData, isAction, isLink, isProperty, isReadAction, isResource, isTransition, mapAction, mapLink, mapProperty, mapResource, mapUberDocument, mapValue, modifiesBody, parseBodyModel,
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
