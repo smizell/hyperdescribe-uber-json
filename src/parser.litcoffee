@@ -51,7 +51,7 @@ When a link is nested, it SHOULD have a `@property` attribute. The value of this
 
     getPropertyName = (data, level) ->
       if level != 0
-        if data.id? then id else data.name
+        if data.id? then data.id else data.name
 
     mapLink = (data, level) ->
       linkUrl = if data.model? then data.url + data.model else data.url
@@ -161,6 +161,7 @@ Mapping a resource from UBER to Hyperdescribe requires finding all of the links,
 
       cleanItem
         name: data.name
+        property: getPropertyName(data, level)
         links: hLinks
         actions: hActions
         resources: hResources

@@ -37,7 +37,7 @@
   getPropertyName = function(data, level) {
     if (level !== 0) {
       if (data.id != null) {
-        return id;
+        return data.id;
       } else {
         return data.name;
       }
@@ -158,6 +158,7 @@
     });
     return cleanItem({
       name: data.name,
+      property: getPropertyName(data, level),
       links: hLinks,
       actions: hActions,
       resources: hResources,

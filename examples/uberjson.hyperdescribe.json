@@ -17,6 +17,7 @@
     {
       "resources": [
         {
+          "property": "people",
           "links": [
             {
               "name": "search",
@@ -60,6 +61,7 @@
           "resources": [
             {
               "name": "person",
+              "property": "person",
               "links": [
                 {
                   "name": "avatarUrl",
@@ -89,6 +91,7 @@
             },
             {
               "name": "person",
+              "property": "person",
               "links": [
                 {
                   "name": "avatarUrl",
@@ -119,6 +122,7 @@
           ]
         },
         {
+          "property": "places",
           "links": [
             {
               "name": "search",
@@ -134,9 +138,11 @@
           "resources": [
             {
               "name": "place",
+              "property": "place",
               "resources": [
                 {
                   "name": "address",
+                  "property": "address",
                   "properties": [
                     {
                       "name": "streetAddress",
@@ -166,9 +172,11 @@
             },
             {
               "name": "place",
+              "property": "place",
               "resources": [
                 {
                   "name": "address",
+                  "property": "address",
                   "properties": [
                     {
                       "name": "streetAddress",
