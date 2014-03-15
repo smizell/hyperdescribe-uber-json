@@ -4,5 +4,5 @@ HyperdescribeUberJSON = module.exports = {
   name: 'uber+json',
   mediaType: 'application/vnd.amundsen-uber+json',
   parser: parser,
-  builder: null
+  builder: function(x) { return x }
 }

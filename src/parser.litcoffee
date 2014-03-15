@@ -2,11 +2,9 @@
 
 The goal of this document is to outline how Hyperdescribe would be used to describe a UBER document according to the [current specs](https://rawgithub.com/mamund/media-types/e034e9d9eae7fb4455f25c928cb84cd513f9472c/uber-hypermedia.html). This document will look at the JSON variant of the UBER format.
 
-    _ = require 'underscore'
-
     cleanItem = (data) ->
-      _.reduce data, (total, value, key) ->
-        total[key] = value if value? and value.length != 0
+      Object.keys(data).reduce (total, key) ->
+        total[key] = data[key] if data[key]? and data[key].length != 0
         total
       , {}
 
@@ -23,34 +21,46 @@ In Hyperdescribe, there are two types of transitions:
 
 In the UBER spec, though, links and actions are not separated in this way, so this document will specify how it is determined whether an item is a link or an action.
 
+UBER only specifies available actions and also provides a mapping of these actions to their corresponding HTTP verbs (see [section 4.1.1](https://rawgithub.com/mamund/media-types/master/uber-hypermedia.html#_mapping_uber_tt_action_tt_values_to_http_methods)).
+
+    availableActions =
+      append: 'POST'
+      partial: 'PATCH'
+      read: 'GET'
+      remove: 'DELETE'
+      replace: 'PUT'
+
 #### Links
 
 Items in UBER that are considered links in Hyperdescribe are items with `read` as the action. If the `@action` attribute is absent and the `@url` attribute is present, the action is assumed to be `read`. Additionally, if the action specified is not listed in the spec, it should be treated as `read`. This is according to the UBER spec.
 
 For an item to be considered a link, it MUST have a `@url` attribute, it MUST NOT have any data, and it MUST be a `read` action.
 
-    #getPropertyName = (data) ->
-    #  if data.id? then id else data.name
-
     hasData = (data, level) ->
       data.data? and data.data?.length != 0
 
     isReadAction = (data) ->
-      (!data.action? or 
+      !data.action? or 
         data.action == 'read' or 
-        data.action not in _.keys(availableActions))
+        data.action not in Object.keys(availableActions)
 
     isLink = (data, level) ->
       data.url? and !hasData(data, level) and isReadAction(data)
 
-    mapLink = (data) ->
+When a link is nested, it SHOULD have a `@property` attribute. The value of this attribute MUST be the `@id` if it is set, and if not, it MUST be the `@name` unless it is undefined.
+
+    getPropertyName = (data, level) ->
+      if level != 0
+        if data.id? then id else data.name
+
+    mapLink = (data, level) ->
       linkUrl = if data.model? then data.url + data.model else data.url
 
       link =
         id: data.id
         name: data.name
         rel: data.rel
-        #property: getPropertyName(data)
+        property: getPropertyName(data, level)
         transclude: data.transclude
         types: data.accepting
         label: data.value
@@ -62,21 +72,12 @@ For an item to be considered a link, it MUST have a `@url` attribute, it MUST NO
 
 #### Actions
 
-UBER only specifies available actions and also provides a mapping of these actions to their corresponding HTTP verbs (see [section 4.1.1](https://rawgithub.com/mamund/media-types/master/uber-hypermedia.html#_mapping_uber_tt_action_tt_values_to_http_methods)).
-
-    availableActions =
-      append: 'POST'
-      partial: 'PATCH'
-      read: 'GET'
-      remove: 'DELETE'
-      replace: 'PUT'
-
 Items that are considered actions MUST have an `@action` attribute, MUST have a `@url`, MAY have a `@model`, and MUST use an avaiable action from the spec.
 
     isAction = (data, level) ->
       data.action? and
         data.url? and
-        data.action in _.keys(availableActions)
+        data.action in Object.keys(availableActions)
 
 According to 4.1.1, there are only three actions that modify the body of the message sent:
 
@@ -92,17 +93,21 @@ Since `read` actions are handled by links, `remove` is the only action that need
       'replace'
     ]
 
+    mapValue = (value) ->
+      if value[0] == '{' then value[1..-2] else value
+
     parseBodyModel = (model) ->
       items = model.split('&').map (item) ->
         [key, value] = item.split('=')
-        { name: key, type: "text", mapsTo: value[1..-2] }
+        { name: key, type: "text", mapsTo: mapValue(value) }
 
-    mapAction = (data) ->
+    mapAction = (data, level) ->
       action = 
         name: data.name
         rel: data.rel
         method: availableActions[data.action]
         sendAs: data.sending
+        property: getPropertyName(data, level)
 
 If an action is one that does not modify the body, the model is added to the action's `@url` attribute and template is set to `true`, which conveys it is templated action.
 
