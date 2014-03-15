@@ -16,7 +16,7 @@ To use:
 ```javascript
 var uberDoc = require('./examples/uber_example.js'),
     HyperdescribeUberJSON = require('hyperdescribe-uber-json'),
-    parsed = HyperdescribeUberJSON.describer(uberDoc);
+    described = HyperdescribeUberJSON.describer(uberDoc);
 ```
 
 ## Browser Version
