@@ -2,26 +2,66 @@
 
 The goal of this document is to outline how Hyperdescribe would be used to describe a UBER document according to the [current specs](https://rawgithub.com/mamund/media-types/e034e9d9eae7fb4455f25c928cb84cd513f9472c/uber-hypermedia.html). This document will look at the JSON variant of the UBER format.
 
+## UBER Document
+
+Mapping an UBER document to Hyperdescribe requires treating the root `@uber` element as a resource. Since each resource can have nested resources, Hyperdescribe should map each resource recursively.
+
+    mapUberDocument = module.exports = (uber) -> 
+      hyperdescribe: mapEntity(uber.uber, 0)
+
     cleanItem = (data) ->
       Object.keys(data).reduce (total, key) ->
         total[key] = data[key] if data[key]? and data[key].length != 0
         total
       , {}
 
+    getClasses = (data) ->
+      if data.name? then [data.name] else null
+
+    getPropertyName = (data, level) ->
+      if level != 0
+        if data.id? then data.id else data.name
+
 ## Types
 
 Even though UBER really only has one data element, `data`, this data element can be treated differently depending on the context. This section will look at each of these different types along with the conditions for those types and the means to describe them with Hyperdescribe.
 
+### Resources
+
+An item considered a resource MUST NOT have an `@action` attribute and MUST have a `@data` attribute. Any `@value` attribute will be ignored. Like the `data` element in UBER, Hyperdescribe can handle nested resources.
+
+    isEntity = (data, level) ->
+      !data.action? and hasData(data, level)
+
+Mapping an element from UBER to Hyperdescribe requires finding all of the transitions and properties, along with all nested entities. Once those are all found, they can then be mapped to Hyperdescribe
+
+    mapEntity = (data, level) ->
+      transitions = data.data.filter (d) -> isTransition(d, level)
+      entities = data.data.filter (d) -> isEntity(d, level)
+      properties = data.data.filter (d) -> isProperty(d, level)
+
+      hTransitions = transitions.map (transition) -> mapTransition(transition)
+      hEntities = entities.map (resource) -> mapEntity(resource, level + 1)
+      hProperties = properties.map (property) -> mapProperty(property)
+
+      version = "0.1.0" if level == 0
+
+      content = cleanItem
+        transitions: hTransitions
+        entities: hEntities
+        properties: hProperties
+
+      cleanItem
+        version: version
+        id: data.id
+        classes: getClasses(data)
+        rels: data.rel
+        property: getPropertyName(data, level)
+        content: content
+
 ### Transitions
 
-In Hyperdescribe, there are two types of transitions:
-
-1. Links
-2. Actions
-
-In the UBER spec, though, links and actions are not separated in this way, so this document will specify how it is determined whether an item is a link or an action.
-
-UBER only specifies available actions and also provides a mapping of these actions to their corresponding HTTP verbs (see [section 4.1.1](https://rawgithub.com/mamund/media-types/master/uber-hypermedia.html#_mapping_uber_tt_action_tt_values_to_http_methods)).
+UBER specifies available actions and also provides a mapping of these actions to their corresponding HTTP verbs (see [section 4.1.1](https://rawgithub.com/mamund/media-types/master/uber-hypermedia.html#_mapping_uber_tt_action_tt_values_to_http_methods)).
 
     availableActions =
       append: 'POST'
@@ -30,104 +70,76 @@ UBER only specifies available actions and also provides a mapping of these actio
       remove: 'DELETE'
       replace: 'PUT'
 
-#### Links
-
-Items in UBER that are considered links in Hyperdescribe are items with `read` as the action. If the `@action` attribute is absent and the `@url` attribute is present, the action is assumed to be `read`. Additionally, if the action specified is not listed in the spec, it should be treated as `read`. This is according to the UBER spec.
-
-For an item to be considered a link, it MUST have a `@url` attribute, it MUST NOT have any data, and it MUST be a `read` action. If a `@data` attribute exists, it MUST be ignored.
-
-    hasData = (data, level) ->
-      data.data? and data.data?.length != 0
-
-    isReadAction = (data) ->
-      !data.action? or 
-        data.action == 'read' or 
-        data.action not in Object.keys(availableActions)
-
-    isLink = (data, level) ->
-      data.url? and !hasData(data, level) and isReadAction(data)
-
-When a link is nested, it SHOULD have a `@property` attribute. The value of this attribute MUST be the `@id` if it is set, and if not, it MUST be the `@name` unless it is undefined.
-
-    getPropertyName = (data, level) ->
-      if level != 0
-        if data.id? then data.id else data.name
-
-    mapLink = (data, level) ->
-      linkUrl = if data.model? then data.url + data.model else data.url
-
-      link =
-        id: data.id
-        name: data.name
-        rel: data.rel
-        property: getPropertyName(data, level)
-        transclude: data.transclude
-        types: data.accepting
-        label: data.value
-
-      link.href = if data.model? then data.url + data.model else data.url
-      link.template = true if data.model?
-
-      link
-
-#### Actions
-
-Items that are considered actions MUST have an `@action` attribute, MUST have a `@url`, MAY have a `@model`, and MUST use an avaiable action from the spec. If a `@data` attribute exists, it MUST be ignored.
-
-    isAction = (data, level) ->
-      data.action? and
-        data.url? and
-        data.action in Object.keys(availableActions)
-
-According to 4.1.1, there are only three actions that modify the body of the message sent:
-
-* append
-* partial
-* replace
-
-Since `read` actions are handled by links, `remove` is the only action that needs special treatment.
-
     modifiesBody = [
       'append'
       'partial'
       'replace'
     ]
 
-    mapValue = (value) ->
-      if value[0] == '{' then value[1..-2] else value
+    isAvailableAction = (data) ->
+      data.action in Object.keys(availableActions)
 
-    parseBodyModel = (model) ->
-      items = model.split('&').map (item) ->
-        [key, value] = item.split('=')
-        { name: key, type: "text", mapsTo: mapValue(value) }
+    hasData = (data, level) ->
+      data.data? and data.data?.length != 0
 
-    mapAction = (data, level) ->
-      action = 
-        name: data.name
-        rel: data.rel
-        method: availableActions[data.action]
-        sendAs: data.sending
+    isTemplated = (data) ->
+      isReadTransition(data) and data.model?
+
+    isReadTransition = (data) ->
+      !data.action? or 
+        data.action == 'read' or 
+        data.action not in Object.keys(availableActions)
+
+If an element has data, for it to be considered a transition, it MUST have a `@url` property, it MUST be an available action, and it MUST NOT be a read transition.
+
+If an element does not have data, the only thing it MUST have is a `@url`.
+
+Reason being, we do not need to describe read links with data because that information will be gathered in the entity object itself under the `@url` property.
+
+    isTransition = (data, level) ->
+      if hasData(data)
+        data.url? and 
+          isAvailableAction(data) and
+          !isReadTransition(data)
+      else
+        data.url?
+
+    getTransitionUrl = (data) ->
+      if isReadTransition(data) and data.model? 
+        data.url + data.model 
+      else 
+        data.url
+
+When a link is nested, it SHOULD have a `@property` attribute. The value of this attribute MUST be the `@id` if it is set, and if not, it MUST be the `@name` unless it is undefined.
+
+    mapTransition = (data, level) ->
+      transition = 
+        id: data.id
+        classes: getClasses(data)
+        url: getTransitionUrl(data)
+        rels: data.rel
         property: getPropertyName(data, level)
+        responseTypes: data.accepting
+        requestTypes: data.sending
+        label: data.value
 
-If an action is one that does not modify the body, the model is added to the action's `@url` attribute and template is set to `true`, which conveys it is templated action.
+If a this particular transition modifies the body of the request and has a `@model` property, the `@model` value will be given to the `@bodyTemplate` property.
 
-      if data.action not in modifiesBody and data.model?
-        action.url = data.url + data.model
-        action.template = true
+      transition.bodyTemplate = data.model if data.action in modifiesBody and data.model?
 
-If the action does modify the body, the model is parsed and fields are created.
+If this element has an `@action` property, the corresponding HTTP verb will be used for the `@method`.
 
-      if data.action in modifiesBody
-        action.url = data.url
-        action.fields = parseBodyModel(data.model)
-      cleanItem(action)
+      transition.method = availableActions[data.action] if data.action?
+
+Templated URLs will require `@isTemplated` to be set to `true`. A transition is templated when it is a `read` action and it has a `@model` property.
+
+      transition.isTemplated = true if isTemplated(data)
+
+      cleanItem transition
 
 ### Properties
 
 An item that is considered a property of a resource MUST have a `@value`, MUST NOT be at the root level (or in other words, MUST be a child element), MUST NOT be a transition, and MUST NOT have a `@data` attribute.
-
-    isTransition = (data, level) ->
-      isLink(data, level) or isAction(data, level)
 
     isProperty = (data, level) ->
       data.value? and level != 0 and !isTransition(data, level) and !hasData(data, level)
@@ -139,43 +151,4 @@ Currently, with regards to mapping to Hyperdescribe, the only relevant values wi
         name: data.name
         value: data.value
 
-### Resources
-
-An item considered a resource MUST NOT have an `@action` attribute and MUST have a `@data` attribute. Any `@value` attribute will be ignored. Like the `data` element in UBER, Hyperdescribe can handle nested resources.
-
-    isResource = (data, level) ->
-      !data.action? and hasData(data, level)
-
-Mapping a resource from UBER to Hyperdescribe requires finding all of the links, actions, and properties, along with all nested resources. Once those are all found, they can then be mapped to how 
-
-    mapResource = (data, level) ->
-      links = data.data.filter (d) -> isLink(d, level)
-      actions = data.data.filter (d) -> isAction(d, level)
-      resources = data.data.filter (d) -> isResource(d, level)
-      properties = data.data.filter (d) -> isProperty(d, level)
-
-      hLinks = links.map (link) -> mapLink(link)
-      hActions = actions.map (action) -> mapAction(action)
-      hResources = resources.map (resource) -> mapResource(resource, level + 1)
-      hProperties = properties.map (property) -> mapProperty(property)
-
-      cleanItem
-        name: data.name
-        property: getPropertyName(data, level)
-        links: hLinks
-        actions: hActions
-        resources: hResources
-        properties: hProperties
-
-## UBER Document
-
-Mapping an UBER document to Hyperdescribe requires treating the root `@uber` element as a resource. Since each resource can have nested resources, Hyperdescribe should map each resource recursively.
-
-    mapUberDocument = module.exports = (uber) -> mapResource(uber.uber, 0)
-
-## Issues
-
-1. There is currently no way to tell whether a nested link should be a property of the resource (e.g. the `avatarUrl` in the example in the spec) or just a normal link. 
-2. Is there any way to specify schema.org information for an UBER document?
-3. I'm currently ignoring all `@data` attributes in links and actions.
 

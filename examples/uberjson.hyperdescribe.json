@@ -1,212 +1,263 @@
 {
-  "links": [
-    {
-      "rel": [
-        "self"
-      ],
-      "href": "http://example.org/"
-    },
-    {
-      "rel": [
-        "profile"
-      ],
-      "href": "http://example.org/profiles/people-and-places"
-    }
-  ],
-  "resources": [
-    {
-      "resources": [
+  "hyperdescribe": {
+    "version": "0.1.1",
+    "content": {
+      "transitions": [
         {
-          "property": "people",
-          "links": [
-            {
-              "name": "search",
-              "rel": [
-                "search",
-                "collection"
-              ],
-              "property": "search",
-              "href": "http://example.org/people/search?g={givenName}&f={familyName}&e={email}",
-              "template": true
-            }
-          ],
-          "actions": [
-            {
-              "name": "create",
-              "rel": [
-                "http://example.org/rels/create"
-              ],
-              "method": "POST",
-              "property": "create",
-              "url": "http://example.org/people/",
-              "fields": [
-                {
-                  "name": "g",
-                  "type": "text",
-                  "mapsTo": "givenName"
-                },
-                {
-                  "name": "f",
-                  "type": "text",
-                  "mapsTo": "familyName"
-                },
-                {
-                  "name": "e",
-                  "type": "text",
-                  "mapsTo": "email"
-                }
-              ]
-            }
-          ],
-          "resources": [
-            {
-              "name": "person",
-              "property": "person",
-              "links": [
-                {
-                  "name": "avatarUrl",
-                  "property": "avatarUrl",
-                  "transclude": "true",
-                  "types": [
-                    "image/*"
-                  ],
-                  "label": "http://example.org/avatars/1",
-                  "href": "http://example.org/avatars/1"
-                }
-              ],
-              "properties": [
-                {
-                  "name": "givenName",
-                  "value": "Mike"
-                },
-                {
-                  "name": "familyName",
-                  "value": "Amundsen"
-                },
-                {
-                  "name": "email",
-                  "value": "mike@example.org"
-                }
-              ]
-            },
-            {
-              "name": "person",
-              "property": "person",
-              "links": [
-                {
-                  "name": "avatarUrl",
-                  "property": "avatarUrl",
-                  "transclude": "true",
-                  "types": [
-                    "image/*"
-                  ],
-                  "label": "http://example.org/avatars/2",
-                  "href": "http://example.org/avatars/2"
-                }
-              ],
-              "properties": [
-                {
-                  "name": "givenName",
-                  "value": "Mildred"
-                },
-                {
-                  "name": "familyName",
-                  "value": "Amundsen"
-                },
-                {
-                  "name": "email",
-                  "value": "mildred@example.org"
-                }
-              ]
-            }
+          "url": "http://example.org/",
+          "rels": [
+            "self"
           ]
         },
         {
-          "property": "places",
-          "links": [
-            {
-              "name": "search",
-              "rel": [
-                "search",
-                "collection"
-              ],
-              "property": "search",
-              "href": "http://example.org/places/search?r={addressRegion}&l={addressLocality}&p={postalCode}",
-              "template": true
-            }
-          ],
-          "resources": [
-            {
-              "name": "place",
-              "property": "place",
-              "resources": [
-                {
-                  "name": "address",
-                  "property": "address",
-                  "properties": [
-                    {
-                      "name": "streetAddress",
-                      "value": "123 Main Street"
-                    },
-                    {
-                      "name": "addressLocalitly",
-                      "value": "Byteville"
-                    },
-                    {
-                      "name": "addressRegion",
-                      "value": "MD"
-                    },
-                    {
-                      "name": "postalCode",
-                      "value": "12345"
-                    }
-                  ]
-                }
-              ],
-              "properties": [
-                {
-                  "name": "name",
-                  "value": "Home"
-                }
-              ]
-            },
-            {
-              "name": "place",
-              "property": "place",
-              "resources": [
-                {
-                  "name": "address",
-                  "property": "address",
-                  "properties": [
-                    {
-                      "name": "streetAddress",
-                      "value": "1456 Grand Ave."
-                    },
-                    {
-                      "name": "addressLocalitly",
-                      "value": "Byteville"
-                    },
-                    {
-                      "name": "addressRegion",
-                      "value": "MD"
-                    },
-                    {
-                      "name": "postalCode",
-                      "value": "12345"
-                    }
-                  ]
-                }
-              ],
-              "properties": [
-                {
-                  "name": "name",
-                  "value": "Work"
-                }
-              ]
-            }
+          "url": "http://example.org/profiles/people-and-places",
+          "rels": [
+            "profile"
           ]
+        }
+      ],
+      "entities": [
+        {
+          "content": {
+            "entities": [
+              {
+                "id": "people",
+                "rels": [
+                  "collection",
+                  "http://example.org/rels/people"
+                ],
+                "property": "people",
+                "content": {
+                  "transitions": [
+                    {
+                      "classes": [
+                        "create"
+                      ],
+                      "url": "http://example.org/people/",
+                      "rels": [
+                        "http://example.org/rels/create"
+                      ],
+                      "property": "create",
+                      "bodyTemplate": "g={givenName}&f={familyName}&e={email}",
+                      "method": "POST"
+                    },
+                    {
+                      "classes": [
+                        "search"
+                      ],
+                      "url": "http://example.org/people/search?g={givenName}&f={familyName}&e={email}",
+                      "rels": [
+                        "search",
+                        "collection"
+                      ],
+                      "property": "search",
+                      "isTemplated": true
+                    }
+                  ],
+                  "entities": [
+                    {
+                      "classes": [
+                        "person"
+                      ],
+                      "rels": [
+                        "item",
+                        "http://example.org/rels/person"
+                      ],
+                      "property": "person",
+                      "content": {
+                        "transitions": [
+                          {
+                            "classes": [
+                              "avatarUrl"
+                            ],
+                            "url": "http://example.org/avatars/1",
+                            "property": "avatarUrl",
+                            "responseTypes": [
+                              "image/*"
+                            ],
+                            "label": "http://example.org/avatars/1"
+                          }
+                        ],
+                        "properties": [
+                          {
+                            "name": "givenName",
+                            "value": "Mike"
+                          },
+                          {
+                            "name": "familyName",
+                            "value": "Amundsen"
+                          },
+                          {
+                            "name": "email",
+                            "value": "mike@example.org"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "classes": [
+                        "person"
+                      ],
+                      "rels": [
+                        "item",
+                        "http://example.org/rels/person"
+                      ],
+                      "property": "person",
+                      "content": {
+                        "transitions": [
+                          {
+                            "classes": [
+                              "avatarUrl"
+                            ],
+                            "url": "http://example.org/avatars/2",
+                            "property": "avatarUrl",
+                            "responseTypes": [
+                              "image/*"
+                            ],
+                            "label": "http://example.org/avatars/2"
+                          }
+                        ],
+                        "properties": [
+                          {
+                            "name": "givenName",
+                            "value": "Mildred"
+                          },
+                          {
+                            "name": "familyName",
+                            "value": "Amundsen"
+                          },
+                          {
+                            "name": "email",
+                            "value": "mildred@example.org"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "places",
+                "rels": [
+                  "collection",
+                  "http://example.org/rels/places"
+                ],
+                "property": "places",
+                "content": {
+                  "transitions": [
+                    {
+                      "classes": [
+                        "search"
+                      ],
+                      "url": "http://example.org/places/search?r={addressRegion}&l={addressLocality}&p={postalCode}",
+                      "rels": [
+                        "search",
+                        "collection"
+                      ],
+                      "property": "search",
+                      "isTemplated": true
+                    }
+                  ],
+                  "entities": [
+                    {
+                      "classes": [
+                        "place"
+                      ],
+                      "rels": [
+                        "item",
+                        "http://example.org/rels/place"
+                      ],
+                      "property": "place",
+                      "content": {
+                        "entities": [
+                          {
+                            "classes": [
+                              "address"
+                            ],
+                            "property": "address",
+                            "content": {
+                              "properties": [
+                                {
+                                  "name": "streetAddress",
+                                  "value": "123 Main Street"
+                                },
+                                {
+                                  "name": "addressLocalitly",
+                                  "value": "Byteville"
+                                },
+                                {
+                                  "name": "addressRegion",
+                                  "value": "MD"
+                                },
+                                {
+                                  "name": "postalCode",
+                                  "value": "12345"
+                                }
+                              ]
+                            }
+                          }
+                        ],
+                        "properties": [
+                          {
+                            "name": "name",
+                            "value": "Home"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "classes": [
+                        "place"
+                      ],
+                      "rels": [
+                        "item",
+                        "http://example.org/rels/place"
+                      ],
+                      "property": "place",
+                      "content": {
+                        "entities": [
+                          {
+                            "classes": [
+                              "address"
+                            ],
+                            "property": "address",
+                            "content": {
+                              "properties": [
+                                {
+                                  "name": "streetAddress",
+                                  "value": "1456 Grand Ave."
+                                },
+                                {
+                                  "name": "addressLocalitly",
+                                  "value": "Byteville"
+                                },
+                                {
+                                  "name": "addressRegion",
+                                  "value": "MD"
+                                },
+                                {
+                                  "name": "postalCode",
+                                  "value": "12345"
+                                }
+                              ]
+                            }
+                          }
+                        ],
+                        "properties": [
+                          {
+                            "name": "name",
+                            "value": "Work"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
         }
       ]
     }
-  ]
+  }
 }
